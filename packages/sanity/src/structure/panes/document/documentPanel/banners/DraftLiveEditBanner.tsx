@@ -57,7 +57,7 @@ export function DraftLiveEditBanner({
   })
 
   const hasDraft = displayed && displayed._id && isDraftId(displayed._id)
-  if (selectedPerspectiveName && !hasDraft) {
+  if ((!selectedPerspectiveName || selectedPerspectiveName === 'published') && !hasDraft) {
     return null
   }
   return (

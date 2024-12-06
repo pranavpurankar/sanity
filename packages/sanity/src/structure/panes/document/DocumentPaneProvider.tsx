@@ -111,6 +111,9 @@ export const DocumentPaneProvider = memo((props: DocumentPaneProviderProps) => {
    */
   const newDocumentVersion = params.version === selectedPerspectiveName ? params.version : undefined
 
+  const schemaType = schema.get(documentType) as ObjectSchemaType | undefined
+  const liveEdit = Boolean(schemaType?.liveEdit)
+
   const panePayload = useUnique(paneRouter.payload)
   const {templateName, templateParams} = useMemo(
     () =>
@@ -134,7 +137,6 @@ export const DocumentPaneProvider = memo((props: DocumentPaneProviderProps) => {
   const initialValue = useUnique(initialValueRaw)
 
   const {patch} = useDocumentOperation(documentId, documentType, selectedReleaseId)
-  const schemaType = schema.get(documentType) as ObjectSchemaType | undefined
   const editState = useEditState(documentId, documentType, 'default', selectedReleaseId)
   const {validation: validationRaw} = useValidationStatus(
     documentId,
@@ -150,7 +152,9 @@ export const DocumentPaneProvider = memo((props: DocumentPaneProviderProps) => {
 
   switch (true) {
     case typeof selectedReleaseId !== 'undefined':
-      value = editState.version || editState.draft || editState.published || value
+      value = liveEdit
+        ? editState.version || editState.draft || editState.published || value
+        : editState.version || editState.published || value
       break
     case selectedPerspectiveName === 'published':
       value = editState.published || editState.draft || value
@@ -572,7 +576,6 @@ export const DocumentPaneProvider = memo((props: DocumentPaneProviderProps) => {
   )
 
   const requiredPermission = value._createdAt ? 'update' : 'create'
-  const liveEdit = Boolean(schemaType?.liveEdit)
   const docId = value._id ? value._id : 'dummy-id'
   const docPermissionsInput = useMemo(() => {
     return {
@@ -602,8 +605,8 @@ export const DocumentPaneProvider = memo((props: DocumentPaneProviderProps) => {
     const isLocked = editState.transactionSyncLock?.enabled
     // in cases where the document has drafts but the schema is live edit,
     // there is a risk of data loss, so we disable editing in this case
-    const isLiveEditAndDraftPerspective = liveEdit && !selectedPerspectiveName
-    const isLiveEditAndPublishedPerspective = liveEdit && selectedPerspectiveName === 'published'
+    const isLiveEditAndPublishedPerspective =
+      (liveEdit && selectedPerspectiveName === 'published') || !selectedPerspectiveName
     const isSystemPerspectiveApplied =
       isLiveEditAndPublishedPerspective || (selectedPerspectiveName ? existsInBundle : true)
 
@@ -623,7 +626,6 @@ export const DocumentPaneProvider = memo((props: DocumentPaneProviderProps) => {
       isLocked ||
       isDeleting ||
       isDeleted ||
-      isLiveEditAndDraftPerspective ||
       isCreateLinked ||
       isReleaseLocked
     )

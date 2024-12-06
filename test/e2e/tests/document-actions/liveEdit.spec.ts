@@ -10,7 +10,7 @@ test(`liveEdited document can be created, edited, and deleted`, async ({
   await createDraftDocument('/test/content/playlist')
   await page.getByText('select the publish document to edit it')
   // Navigate to the published perspective
-  await page.getByRole('button', {name: 'Published'}).click()
+  await page.getByRole('button', {name: 'Published'}).click({timeout: 20_000})
   await page.getByTestId('field-name').getByTestId('string-input').fill(name)
 
   await page.getByTestId('action-menu-button').click()

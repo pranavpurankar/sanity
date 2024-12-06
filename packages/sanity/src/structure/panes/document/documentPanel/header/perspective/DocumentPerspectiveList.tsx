@@ -100,18 +100,69 @@ export const DocumentPerspectiveList = memo(function DocumentPerspectiveList() {
 
   const isPublishedChipDisabled = useMemo(() => {
     if (editState?.liveEdit) {
-      if (!editState?.published) {
+      return !editState?.draft && !editState?.version
+    }
+
+    return !editState?.published
+  }, [editState?.draft, editState?.liveEdit, editState?.published, editState?.version])
+
+  const isDraftChipSelected = useMemo(() => {
+    /** the draft is selected when:
+     * when the document displayed is a draft,
+     * when the perspective is not set and liveEdit is false,
+     * when the document is not published and the displayed version is draft,
+     * when there is no draft (new document),
+     */
+    if (editState?.liveEdit) {
+      if (editState?.draft) {
         return true
       }
 
       return false
     }
 
-    if (!editState?.published) {
+    return !(
+      editState?.draft?._id === displayed?._id ||
+      !selectedPerspectiveName ||
+      (!editState?.published && editState?.draft && editState?.draft?._id === displayed?._id) ||
+      (!editState?.published && !editState?.draft)
+    )
+  }, [
+    displayed?._id,
+    editState?.draft,
+    editState?.liveEdit,
+    editState?.published,
+    selectedPerspectiveName,
+  ])
+
+  const isPublishedChipSelected = useMemo(() => {
+    /** the publish is selected when:
+     * liveEdit is true and no draft exists and no perspective is selected
+     * when the document displayed is a published document, but has no draft and the perspective that is
+     * selected is the null perspective - this means that it should be showing draft
+     * when the perspective is published
+     */
+    if (editState?.liveEdit) {
+      if (editState?.draft) {
+        return false
+      }
+
       return true
     }
-    return false
-  }, [editState?.liveEdit, editState?.published])
+
+    return !!(
+      (editState?.published?._id === displayed?._id &&
+        !editState?.draft &&
+        selectedPerspectiveName) ||
+      selectedPerspectiveName === 'published'
+    )
+  }, [
+    displayed?._id,
+    editState?.draft,
+    editState?.liveEdit,
+    editState?.published,
+    selectedPerspectiveName,
+  ])
 
   return (
     <>
@@ -131,19 +182,7 @@ export const DocumentPerspectiveList = memo(function DocumentPerspectiveList() {
         }
         disabled={isPublishedChipDisabled}
         onClick={handleBundleChange('published')}
-        selected={
-          /** the publish is selected when:
-           * when the document displayed is a published document, but has no draft and the perspective that is
-           * selected is the null perspective - this means that it should be showing draft
-           * when the perspective is published
-           */
-          !!(
-            (editState?.published?._id === displayed?._id &&
-              !editState?.draft &&
-              selectedPerspectiveName) ||
-            selectedPerspectiveName === 'published'
-          )
-        }
+        selected={isPublishedChipSelected}
         text={t('release.chip.published')}
         tone="positive"
         contextValues={{
@@ -181,22 +220,7 @@ export const DocumentPerspectiveList = memo(function DocumentPerspectiveList() {
             )}
           </Text>
         }
-        selected={
-          /** the draft is selected when:
-           * when the document displayed is a draft,
-           * when the perspective is null,
-           * when the document is not published and the displayed version is draft,
-           * when there is no draft (new document),
-           */
-          !!(
-            editState?.draft?._id === displayed?._id ||
-            !selectedPerspectiveName ||
-            (!editState?.published &&
-              editState?.draft &&
-              editState?.draft?._id === displayed?._id) ||
-            (!editState?.published && !editState?.draft)
-          )
-        }
+        selected={isDraftChipSelected}
         text={t('release.chip.draft')}
         tone="caution"
         onClick={handleBundleChange('drafts')}
