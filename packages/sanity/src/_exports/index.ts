@@ -1,8 +1,17 @@
-import {CorsOriginError} from '@sanity/client'
+import {CorsOriginError, type ReleaseDocument, type SanityClient} from '@sanity/client'
 import {
+  type ArraySchemaType,
+  type Asset,
+  type BlockDefinition,
+  type BooleanSchemaType,
+  type CrossDatasetReferenceSchemaType,
   defineArrayMember,
   defineField,
   defineType,
+  type FileSchemaType,
+  type FormNodeValidation,
+  type GlobalDocumentReferenceSchemaType,
+  type I18nTextRecord,
   isArrayOfBlocksSchemaType,
   isArrayOfObjectsSchemaType,
   isArrayOfPrimitivesSchemaType,
@@ -52,12 +61,110 @@ import {
   isValidationInfoMarker,
   isValidationWarning,
   isValidationWarningMarker,
+  type MultiFieldSet,
+  type NumberSchemaType,
+  type ObjectField,
+  type ObjectSchemaType,
+  type Path,
+  type PreviewValue,
+  type ReferenceSchemaType,
+  type Role,
+  type Rule,
+  type RuleSpec,
+  type SanityDocument,
+  type SanityDocumentLike,
+  type Schema,
+  type SchemaType,
+  type SchemaValidationValue,
   searchStrategies,
+  type SearchStrategy,
+  type SpanSchemaType,
+  type StringSchemaType,
   typed,
 } from '@sanity/types'
 import {isEmptyObject} from '@sanity/util/content'
 import {findIndex, noop} from 'rxjs'
 
+import {
+  type AnnotationDetails,
+  CapabilityGate,
+  catchWithCount,
+  type Chunk,
+  type ChunkType,
+  type CommandListItemContext,
+  type CommandListRenderItemCallback,
+  type CommentIntentGetter,
+  type Diff,
+  type DocumentActionComponent,
+  type DocumentActionConfirmDialogProps,
+  type DocumentActionDescription,
+  type DocumentActionDialogProps,
+  type DocumentActionGroup,
+  type DocumentActionModalDialogProps,
+  type DocumentActionPopoverDialogProps,
+  type DocumentActionProps,
+  type DocumentActionsContext,
+  type DocumentActionsVersionType,
+  type DocumentAvailability,
+  type DocumentBadgeComponent,
+  type DocumentBadgeDescription,
+  type DocumentBadgeProps,
+  type DocumentChangeContextInstance,
+  type DocumentFormNode,
+  type DocumentGroupEvent,
+  type DocumentInspectorUseMenuItemProps,
+  type DocumentLanguageFilterComponent,
+  type DocumentLayoutProps,
+  type DocumentMutationEvent,
+  type DocumentPresence,
+  type DocumentRebaseEvent,
+  type DuplicateDocumentActionComponent,
+  EditScheduleForm,
+  type FIXME,
+  type FormDocumentValue,
+  type GeneralDocumentListLayoutKey,
+  type InitialValueTemplateItem,
+  type InputProps,
+  isNewDocument,
+  isPerspectiveWriteable,
+  isSanityDefinedAction,
+  KeyValueStoreValue,
+  LocaleResourceBundle,
+  type LocaleSource,
+  type MediaLibraryConfig,
+  type ObjectDiff,
+  type PartialContext,
+  type PermissionCheckResult,
+  PerspectiveContextValue,
+  type PerspectiveNotWriteableReason,
+  type PerspectiveStack,
+  type PluginOptions,
+  type PreviewLayoutKey,
+  type QueryParams,
+  type RelativeTimeOptions,
+  type ReleaseId,
+  ReleasesNav,
+  type ReleasesNavMenuItemPropsGetter,
+  Resizable,
+  ScheduledBadge,
+  type SearchOptions,
+  type SearchSort,
+  type SelectedPerspective,
+  type Source,
+  type SourceClientOptions,
+  type StateTree,
+  type StudioLocaleResourceKeys,
+  type Template,
+  type TFunction,
+  useCanvasCompanionDoc,
+  useConditionalToast,
+  useManageFavorite,
+  type UseManageFavoriteProps,
+  useNavigateToCanvasDoc,
+  useReconnectingToast,
+  useReviewChanges,
+  useStudioUrl,
+} from '../core'
 import {ChangeFieldWrapper} from '../core/changeIndicators/ChangeFieldWrapper'
 import {ChangeIndicator} from '../core/changeIndicators/ChangeIndicator'
 import {ChangeConnectorRoot} from '../core/changeIndicators/overlay/ChangeConnectorRoot'
@@ -87,17 +194,14 @@ import {
 import {buildCommentRangeDecorations} from '../core/comments/utils/inline-comments/buildCommentRangeDecorations'
 import {buildRangeDecorationSelectionsFromComments} from '../core/comments/utils/inline-comments/buildRangeDecorationSelectionsFromComments'
 import {buildTextSelectionFromFragment} from '../core/comments/utils/inline-comments/buildTextSelectionFromFragment'
-import {BasicDocument} from '../core/components/BasicDocument'
 import {BetaBadge} from '../core/components/BetaBadge'
 import {AutoCollapseMenu, CollapseMenu} from '../core/components/collapseMenu/CollapseMenu'
 import {CollapseMenuButton} from '../core/components/collapseMenu/CollapseMenuButton'
 import {CommandList} from '../core/components/commandList/CommandList'
 import {ContextMenuButton} from '../core/components/contextMenuButton/ContextMenuButton'
-import {DefaultDocument} from '../core/components/DefaultDocument'
 import {DocumentStatus} from '../core/components/documentStatus'
 import {DocumentStatusIndicator} from '../core/components/documentStatusIndicator'
 import {ErrorActions, serializeError, useCopyErrorDetails} from '../core/components/errorActions'
-import {GlobalErrorHandler} from '../core/components/globalErrorHandler'
 import {GetHookCollectionState} from '../core/components/hookCollection'
 import {Hotkeys} from '../core/components/Hotkeys'
 import {InsufficientPermissionsMessage} from '../core/components/InsufficientPermissionsMessage'
@@ -111,6 +215,7 @@ import {
 } from '../core/components/previewCard'
 import {
   DetailPreview,
+  type GeneralPreviewLayoutKey,
   InlinePreview,
   MediaPreview,
   TemplatePreview,
@@ -144,10 +249,20 @@ import {createConfig, defineConfig} from '../core/config/defineConfig'
 import {createPlugin, definePlugin} from '../core/config/definePlugin'
 import {
   defineDocumentFieldAction,
+  type DocumentFieldAction,
+  type DocumentFieldActionGroup,
+  type DocumentFieldActionItem,
+  type DocumentFieldActionNode,
+  type DocumentFieldActionProps,
   documentFieldActionsReducer,
   initialDocumentFieldActions,
 } from '../core/config/document/fieldActions'
-import {defineDocumentInspector} from '../core/config/document/inspector'
+import {
+  defineDocumentInspector,
+  type DocumentInspector,
+  type DocumentInspectorMenuItem,
+  type DocumentInspectorProps,
+} from '../core/config/document/inspector'
 import {flattenConfig} from '../core/config/flattenConfig'
 import {prepareConfig} from '../core/config/prepareConfig'
 import {
@@ -158,10 +273,18 @@ import {
 import {resolveSchemaTypes} from '../core/config/resolveSchemaTypes'
 import {SchemaError} from '../core/config/SchemaError'
 import {
+  type Config,
+  type ConfigContext,
+  type Tool,
+  type Workspace,
+  type WorkspaceOptions,
+} from '../core/config/types'
+import {
   getConfigContextFromSource,
   useConfigContextFromSource,
 } from '../core/config/useConfigContextFromSource'
 import {
+  type CreateLinkMetadata,
   getSanityCreateLinkMetadata,
   isSanityCreateExcludedType,
   isSanityCreateLinked,
@@ -293,18 +416,18 @@ import {
   setIfMissing,
   unset,
 } from '../core/form/patch/patch'
-import {createPatchChannel} from '../core/form/patch/PatchChannel'
+import {createPatchChannel, type PatchMsg} from '../core/form/patch/PatchChannel'
 import {resolveConditionalProperty} from '../core/form/store/conditional-property'
 import {setAtPath} from '../core/form/store/stateTreeHelper'
 import {useFormState} from '../core/form/store/useFormState'
 import {getExpandOperations} from '../core/form/store/utils/getExpandOperations'
 import {
   FormCallbacksProvider,
+  type ReferenceInputOptions,
   ReferenceInputOptionsProvider,
   useFormCallbacks,
   useReferenceInputOptions,
 } from '../core/form/studio/contexts'
-import {useReviewChanges} from '../core/form/studio/contexts/reviewChanges/useReviewChanges'
 import {
   defaultRenderAnnotation,
   defaultRenderBlock,
@@ -336,7 +459,7 @@ import {TransformPatches} from '../core/form/utils/TransformPatches'
 import {useClient} from '../core/hooks/useClient'
 import {useConnectionState} from '../core/hooks/useConnectionState'
 import {useDataset} from '../core/hooks/useDataset'
-import {useDateTimeFormat} from '../core/hooks/useDateTimeFormat'
+import {useDateTimeFormat, type UseDateTimeFormatOptions} from '../core/hooks/useDateTimeFormat'
 import {useDocumentOperation} from '../core/hooks/useDocumentOperation'
 import {useDocumentOperationEvent} from '../core/hooks/useDocumentOperationEvent'
 import {useEditState} from '../core/hooks/useEditState'
@@ -380,17 +503,22 @@ import {
   FieldPresenceWithOverlay,
 } from '../core/presence/FieldPresence'
 import {
+  type AvailabilityResponse,
   getPreviewPaths,
   getPreviewStateObservable,
   getPreviewValueWithFallback,
   prepareForPreview,
   Preview,
+  type PreviewableType,
   PreviewLoader,
   SanityDefaultPreview,
   unstable_useObserveDocument,
   unstable_useValuePreview,
 } from '../core/preview'
-import {createDocumentPreviewStore} from '../core/preview/documentPreviewStore'
+import {
+  createDocumentPreviewStore,
+  type DocumentPreviewStore,
+} from '../core/preview/documentPreviewStore'
 import {VersionChip} from '../core/releases/components/documentHeader/VersionChip'
 import {ReleaseAvatar} from '../core/releases/components/ReleaseAvatar'
 import {
@@ -424,7 +552,6 @@ import {
   isPublishedPerspective,
   isReleaseScheduledOrScheduling,
 } from '../core/releases/util/util'
-import {EditScheduleForm, ScheduleAction, ScheduledBadge} from '../core/scheduledPublishing'
 import {getSchemaTypeTitle} from '../core/schema'
 import {createSchema} from '../core/schema/createSchema'
 import {getSearchableTypes, isPerspectiveRaw} from '../core/search'
@@ -454,7 +581,9 @@ import {
   useUserStore,
 } from '../core/store/_legacy/datastores'
 import {
+  type DocumentStore,
   editState,
+  type EditStateFor,
   emitOperation,
   getInitialValueStream,
   getPairListener,
@@ -474,6 +603,7 @@ import {validation} from '../core/store/_legacy/document/document-pair/validatio
 import {createDocumentStore} from '../core/store/_legacy/document/document-store'
 import {useResolveInitialValueForType} from '../core/store/_legacy/document/useResolveInitialValueForType'
 import {
+  type DocumentValuePermission,
   getDocumentPairPermissions,
   getDocumentValuePermissions,
   useDocumentPairPermissions,
@@ -483,6 +613,7 @@ import {
 import {createGrantsStore, grantsPermissionOn} from '../core/store/_legacy/grants/grantsStore'
 import {
   getTemplatePermissions,
+  type TemplatePermissionsResult,
   useTemplatePermissions,
   useTemplatePermissionsFromHookFactory,
 } from '../core/store/_legacy/grants/templatePermissions'
@@ -492,7 +623,7 @@ import {
   removeMissingReferences,
 } from '../core/store/_legacy/history/createHistoryStore'
 import {useTimelineSelector} from '../core/store/_legacy/history/useTimelineSelector'
-import {useTimelineStore} from '../core/store/_legacy/history/useTimelineStore'
+import {type TimelineStore, useTimelineStore} from '../core/store/_legacy/history/useTimelineStore'
 import {createPresenceStore, SESSION_ID} from '../core/store/_legacy/presence/presence-store'
 import {useDocumentPresence} from '../core/store/_legacy/presence/useDocumentPresence'
 import {useGlobalPresence} from '../core/store/_legacy/presence/useGlobalPresence'
@@ -512,6 +643,7 @@ import {
   isUnpublishDocumentEvent,
   isUnscheduleDocumentVersionEvent,
   isUpdateLiveDocumentEvent,
+  type PublishDocumentVersionEvent,
   useEvents,
   useEventsStore,
 } from '../core/store/events'
@@ -622,6 +754,7 @@ import {
   isSystemBundleName,
   isVersionId,
   newDraftFrom,
+  type PublishedId,
   removeDupes,
   systemBundles,
   VERSION_FOLDER,
@@ -649,9 +782,8 @@ import {asLoadable, useLoadable} from '../core/util/useLoadable'
 import {userHasRole} from '../core/util/userHasRole'
 import {useThrottledCallback} from '../core/util/useThrottledCallback'
 import {useUnique} from '../core/util/useUnique'
-import {Rule, validateDocument} from '../core/validation'
+import {Rule as ConcreteRuleClass, validateDocument} from '../core/validation'
 import {SANITY_VERSION} from '../core/version'
-import {Resizable} from '../presentation/components/Resizable'
 
 export {
   _createAuthStore,
@@ -673,7 +805,6 @@ export {
   asLoadable,
   AutoCollapseMenu,
   AvatarSkeleton,
-  BasicDocument,
   BetaBadge,
   BlockEditor,
   BlockImagePreview,
@@ -713,7 +844,7 @@ export {
   CommentsProvider,
   CommentsSelectedPathProvider,
   CompactPreview,
-  Rule as ConcreteRuleClass,
+  ConcreteRuleClass,
   ConfigPropertyError,
   ConfigResolutionError,
   CONNECTING,
@@ -754,7 +885,6 @@ export {
   decodePath,
   DEFAULT_MAX_RECURSION_DEPTH,
   DEFAULT_STUDIO_CLIENT_OPTIONS,
-  DefaultDocument,
   defaultLocale,
   DefaultPreview,
   defaultRenderAnnotation,
@@ -872,7 +1002,6 @@ export {
   getVersionId,
   getVersionInlineBadge,
   getWorkspaceIdentifier,
-  GlobalErrorHandler,
   globalScope,
   grantsPermissionOn,
   GroupChange,
@@ -937,6 +1066,7 @@ export {
   isKeyedObject,
   isKeySegment,
   IsLastPaneProvider,
+  isNewDocument,
   isNonNullable,
   isNumberInputProps,
   isNumberSchemaType,
@@ -964,6 +1094,7 @@ export {
   isSanityCreateLinked,
   isSanityCreateLinkedDocument,
   isSanityCreateStartCompatibleDoc,
+  isSanityDefinedAction,
   isSanityDocument,
   isScheduleDocumentVersionEvent,
   isSearchStrategy,
@@ -1062,7 +1193,6 @@ export {
   SANITY_PATCH_TYPE,
   SANITY_VERSION,
   SanityDefaultPreview,
-  ScheduleAction,
   ScheduledBadge,
   SchemaError,
   ScrollContainer,
@@ -1265,4 +1395,142 @@ export {
   WorkspaceProvider,
   WorkspacesProvider,
   ZIndexProvider,
+}
+
+export type {
+  ArraySchemaType,
+  Asset,
+  BooleanSchemaType,
+  ConfigContext,
+  CrossDatasetReferenceSchemaType,
+  DocumentActionGroup,
+  DocumentActionProps,
+  DocumentFieldAction,
+  DocumentFieldActionGroup,
+  DocumentFieldActionItem,
+  DocumentFieldActionNode,
+  DocumentFieldActionProps,
+  DocumentInspector,
+  DocumentInspectorMenuItem,
+  DocumentInspectorProps,
+  DocumentPresence,
+  DocumentPreviewStore,
+  DocumentStore,
+  DocumentValuePermission,
+  EditStateFor,
+  FileSchemaType,
+  GeneralPreviewLayoutKey,
+  GlobalDocumentReferenceSchemaType,
+  I18nTextRecord,
+  InitialValueTemplateItem,
+  LocaleSource,
+  NumberSchemaType,
+  ObjectSchemaType,
+  PatchMsg,
+  PerspectiveNotWriteableReason,
+  PerspectiveStack,
+  PreviewableType,
+  PublishDocumentVersionEvent,
+  PublishedId,
+  ReferenceInputOptions,
+  ReferenceSchemaType,
+  ReleaseDocument,
+  SanityDocument,
+  SanityDocumentLike,
+  SearchStrategy,
+  SelectedPerspective,
+  SpanSchemaType,
+  StringSchemaType,
+  TemplatePermissionsResult,
+  TimelineStore,
+  UseDateTimeFormatOptions,
+  Workspace,
+}
+
+export {
+  CapabilityGate,
+  catchWithCount,
+  isPerspectiveWriteable,
+  ReleasesNav,
+  SanityClient,
+  useCanvasCompanionDoc,
+  useConditionalToast,
+  useManageFavorite,
+  useNavigateToCanvasDoc,
+  useReconnectingToast,
+  useStudioUrl,
+}
+
+export type {
+  AnnotationDetails,
+  AvailabilityResponse,
+  BlockDefinition,
+  Chunk,
+  ChunkType,
+  CommandListItemContext,
+  CommandListRenderItemCallback,
+  CommentIntentGetter,
+  Config,
+  CreateLinkMetadata,
+  Diff,
+  DocumentActionComponent,
+  DocumentActionConfirmDialogProps,
+  DocumentActionDescription,
+  DocumentActionDialogProps,
+  DocumentActionModalDialogProps,
+  DocumentActionPopoverDialogProps,
+  DocumentActionsContext,
+  DocumentActionsVersionType,
+  DocumentAvailability,
+  DocumentBadgeComponent,
+  DocumentBadgeDescription,
+  DocumentBadgeProps,
+  DocumentChangeContextInstance,
+  DocumentFormNode,
+  DocumentGroupEvent,
+  DocumentInspectorUseMenuItemProps,
+  DocumentLanguageFilterComponent,
+  DocumentLayoutProps,
+  DocumentMutationEvent,
+  DocumentRebaseEvent,
+  DuplicateDocumentActionComponent,
+  FIXME,
+  FormDocumentValue,
+  FormNodeValidation,
+  GeneralDocumentListLayoutKey,
+  InputProps,
+  MediaLibraryConfig,
+  MultiFieldSet,
+  ObjectDiff,
+  ObjectField,
+  PartialContext,
+  Path,
+  PermissionCheckResult,
+  PluginOptions,
+  PreviewLayoutKey,
+  PreviewValue,
+  QueryParams,
+  RelativeTimeOptions,
+  ReleaseId,
+  ReleasesNavMenuItemPropsGetter,
+  Role,
+  Rule,
+  RuleSpec,
+  Schema,
+  SchemaType,
+  SchemaValidationValue,
+  SearchOptions,
+  SearchSort,
+  Source,
+  SourceClientOptions,
+  StateTree,
+  StudioLocaleResourceKeys,
+  PerspectiveContextValue,
+  KeyValueStoreValue,
+  LocaleResourceBundle,
+  Template,
+  TFunction,
+  Tool,
+  UseManageFavoriteProps,
+  WorkspaceOptions,
 }

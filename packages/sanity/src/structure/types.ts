@@ -11,6 +11,7 @@ import {
   type PerspectiveStack,
 } from 'sanity'
 
+import {type _PaneMenuItem} from './components/pane/types'
 import {
   type DefaultDocumentNodeResolver,
   type Intent,
