@@ -1,5 +1,5 @@
 import {useTelemetry} from '@sanity/telemetry/react'
-import {useCallback, useMemo} from 'react'
+import {useCallback, useEffect, useMemo, useRef} from 'react'
 import {useObservable} from 'react-rx'
 import {of} from 'rxjs'
 
@@ -114,6 +114,14 @@ export function useHistoryStore(): HistoryStore {
 export function useDocumentPreviewStore(): DocumentPreviewStore {
   const client = useClient(DEFAULT_STUDIO_CLIENT_OPTIONS)
   const resourceCache = useResourceCache()
+  const clientRef = useRef(client)
+
+  useEffect(() => {
+    if (client !== clientRef.current) {
+      // oxlint-disable-next-line no-console
+      console.log('BREAK', client && undefined)
+    }
+  }, [client])
 
   return useMemo(() => {
     const documentPreviewStore =
