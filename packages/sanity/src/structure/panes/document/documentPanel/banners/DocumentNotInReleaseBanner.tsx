@@ -7,6 +7,7 @@ import {
   LATEST,
   type ReleaseDocument,
   Translate,
+  truncateReleaseTitle,
   useConditionalToast,
   useTranslation,
   useVersionOperations,
@@ -86,7 +87,8 @@ export function DocumentNotInReleaseBanner({
             t={t}
             values={{
               title:
-                currentRelease?.metadata?.title || tCore('release.placeholder-untitled-release'),
+                truncateReleaseTitle(currentRelease?.metadata?.title) ||
+                tCore('release.placeholder-untitled-release'),
             }}
             components={{
               VersionBadge: getVersionInlineBadge(currentRelease),

@@ -42,6 +42,15 @@ const ChipButton = styled(Button)`
   transition: none;
   cursor: pointer;
   --card-border-color: var(--border-color);
+  max-width: 350px;
+
+  /* Target only the text content for truncation, preserve button height */
+  [data-ui='text'] {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+  }
 `
 const useVersionIsLinked = (documentId: string, fromRelease: string) => {
   const versionId = useMemo(() => {

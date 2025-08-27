@@ -6,6 +6,7 @@ import {
   getVersionFromId,
   isVersionId,
   Translate,
+  truncateReleaseTitle,
   useActiveReleases,
   useDocumentVersions,
   useOnlyHasVersions,
@@ -68,7 +69,11 @@ export function OpenReleaseToEditBannerInner({
             return getReleaseIdFromReleaseDocumentId(version._id) === r
           })
         })
-        .map((version) => version.metadata.title || tCore('release.placeholder-untitled-release')),
+        .map(
+          (version) =>
+            truncateReleaseTitle(version.metadata.title) ||
+            tCore('release.placeholder-untitled-release'),
+        ),
     [activeReleases, documentVersions, tCore],
   )
   const tone = currentVersion && getReleaseTone(currentVersion)

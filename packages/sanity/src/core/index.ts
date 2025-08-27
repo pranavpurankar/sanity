@@ -44,6 +44,7 @@ export {
   ReleaseAvatar,
   RELEASES_INTENT,
   RELEASES_STUDIO_CLIENT_OPTIONS,
+  truncateReleaseTitle,
   useActiveReleases,
   useArchivedReleases,
   useDocumentVersionInfo,

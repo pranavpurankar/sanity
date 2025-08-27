@@ -13,6 +13,8 @@ import {getPublishedId, getVersionFromId, isDraftId, isVersionId} from '../../..
 import {useVersionOperations} from '../../hooks'
 import {releasesLocaleNamespace} from '../../i18n'
 import {getReleaseIdFromReleaseDocumentId} from '../../util/getReleaseIdFromReleaseDocumentId'
+import {truncateReleaseTitle} from '../../util/releaseTitle'
+
 /**
  * @internal
  */
@@ -32,8 +34,10 @@ export function DiscardVersionDialog(props: {
   const toast = useToast()
   const [isDiscarding, setIsDiscarding] = useState(false)
   const discardType = isDraftId(documentId) ? 'draft' : 'release'
-  const releaseName =
+  const rawReleaseName =
     typeof fromPerspective === 'string' ? fromPerspective : fromPerspective.metadata.title
+  const releaseName =
+    truncateReleaseTitle(rawReleaseName) || coreT('release.placeholder-untitled-release')
 
   const schemaType = schema.get(documentType)
 
@@ -96,7 +100,7 @@ export function DiscardVersionDialog(props: {
         ) : (
           <LoadingBlock />
         )}
-        <Box paddingX={2}>
+        <Box paddingX={2} style={{maxWidth: '400px'}}>
           <Text size={1} muted>
             <Translate
               t={t}
