@@ -67,7 +67,7 @@ import {types as presentationPreviewKitSchemaTypes} from './schema/presentation/
 import {defaultDocumentNode, newDocumentOptions, structure} from './structure'
 import {googleTheme} from './themes/google'
 import {vercelTheme} from './themes/vercel'
-import {workshopTool} from './workshop'
+// import {workshopTool} from './workshop'
 
 const localePlugins = [koKRLocale(), nbNOLocale(), nnNOLocale(), ptPTLocale(), svSELocale()]
 
@@ -191,13 +191,13 @@ const sharedSettings = ({projectId}: {projectId: string}) => {
         },
       }),
       colorInput(),
-      workshopTool({
-        collections: [
-          {name: 'sanity', title: 'sanity'},
-          {name: 'structure-tool', title: 'sanity/structure'},
-          {name: 'form-builder', title: '@sanity/form-builder'},
-        ],
-      }),
+      // workshopTool({
+      //   collections: [
+      //     {name: 'sanity', title: 'sanity'},
+      //     {name: 'structure-tool', title: 'sanity/structure'},
+      //     {name: 'form-builder', title: '@sanity/form-builder'},
+      //   ],
+      // }),
       visionTool({
         // uncomment to test
         //defaultApiVersion: '2025-02-05',

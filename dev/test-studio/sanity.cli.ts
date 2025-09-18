@@ -19,7 +19,7 @@ export default defineCliConfig({
   // A) `SANITY_STUDIO_REACT_STRICT_MODE=false pnpm dev`
   // B) creating a `.env` file locally that sets the same env variable as above
   reactStrictMode: true,
-  reactCompiler: {target: '19'},
+  reactCompiler: {target: '18'},
   vite(viteConfig: UserConfig): UserConfig {
     const reactProductionProfiling = process.env.REACT_PRODUCTION_PROFILING === 'true'
 
@@ -91,9 +91,9 @@ export default defineCliConfig({
           ...viteConfig.build?.rollupOptions,
           input: {
             // NOTE: this is required to build static files for the workshop frame
-            'workshop/frame': path.resolve(__dirname, 'workshop/frame/index.html'),
+            // 'workshop/frame': path.resolve(__dirname, 'workshop/frame/index.html'),
             // NOTE: this is required to build static files for the presentation preview iframe
-            'preview': path.resolve(__dirname, 'preview/index.html'),
+            preview: path.resolve(__dirname, 'preview/index.html'),
           },
         },
       },
